@@ -122,6 +122,20 @@ const displayChal = chal => {
       }
     });
 
+    $("#spawn-instance").click(function(event, a){
+      CTFd.fetch("/api/v1/challenges/" + window.CHALLENGE_ID + "/instance", {
+        method: "POST"
+      })
+      console.log(event, a)
+    });
+    
+    $("#stop-instance").click(function(event, a){
+      CTFd.fetch("/api/v1/challenges/" + window.CHALLENGE_ID + "/instance", {
+        method: "DELETE"
+      })
+      console.log(event, a)
+    });
+
     challenge.postRender();
 
     $("#challenge-window")

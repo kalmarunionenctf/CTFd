@@ -1,4 +1,4 @@
-import datetime
+import datetime, requests
 from typing import List
 
 from flask import abort, render_template, request, url_for
@@ -475,6 +475,17 @@ class Challenge(Resource):
             ).count()
         else:
             attempts = 0
+        spawn_action = "start-instance"
+        if chal.instanced:
+            try:
+                res = requests.post("http://127.0.0.1:8000/start-instance/"+challenge_id).json()
+                instance = res.get("instance", "")
+                if instance:
+                    setattr(chal, "connection_info", instance)
+                    spawn_action = "stop-instance"
+            except requests.exceptions.JSONDecodeError:
+                #something went wrong in backend, return empty connection info
+                setattr(chal, "connection_info", "")
 
         response["solves"] = solve_count
         response["solved_by_me"] = solved_by_user
@@ -483,6 +494,7 @@ class Challenge(Resource):
         response["tags"] = tags
         response["hints"] = hints
 
+        #RENDERED HERE
         response["view"] = render_template(
             chal_class.templates["view"].lstrip("/"),
             solves=solve_count,
@@ -493,6 +505,7 @@ class Challenge(Resource):
             max_attempts=chal.max_attempts,
             attempts=attempts,
             challenge=chal,
+            spawn_action=spawn_action
         )
 
         db.session.close()
@@ -885,3 +898,21 @@ class ChallengeRequirements(Resource):
     def get(self, challenge_id):
         challenge = Challenges.query.filter_by(id=challenge_id).first_or_404()
         return {"success": True, "data": challenge.requirements}
+
+@challenges_namespace.route("/<challenge_id>/instance")
+class ChallengeUrl(Resource):
+    def post(self, challenge_id):
+        try:
+            res = requests.post("http://127.0.0.1:8000/start-instance/"+challenge_id).json()
+            instance = res.get("instance", "")
+        except requests.exceptions.JSONDecodeError:
+            pass
+        return {"success": True, "data": challenge_id}
+    
+    def delete(self, challenge_id):
+        try:
+            return requests.post("http://127.0.0.1:8000/stop-instance"+challenge_id).json()
+        except requests.exceptions.JSONDecodeError:
+            pass
+        return {"success": False, "data": "something went wrong"}
+            

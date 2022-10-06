@@ -83,6 +83,19 @@
 	</div>
 	{% endblock %}
 
+	{% block instanced %}
+	<div class="form-group">
+		<label>
+			Instanced<br>
+			<small class="form-text text-muted">Changes if the challenge should spawn an instance pr. team or nah</small>
+		</label>
+
+		<select class="form-control custom-select" name="instanced">
+			<option value="true" {% if challenge.instanced == true %}selected{% endif %}>Yes</option>
+			<option value="false" {% if challenge.instanced == false %}selected{% endif %}>No</option>
+		</select>
+	</div>
+	{% endblock %}
 	{% block submit %}
 	<div>
 		<button class="btn btn-success btn-outlined float-right" type="submit">

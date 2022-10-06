@@ -189,7 +189,8 @@ function handleChallengeOptions(event) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        state: params.state
+        state: params.state,
+        instanced: (params.instanced === "true")
       })
     })
       .then(function(response) {
@@ -352,7 +353,6 @@ $(() => {
       }
     });
   });
-
   $("#challenge-update-container > form").submit(function(e) {
     e.preventDefault();
     var params = $(e.target).serializeJSON(true);
@@ -370,6 +370,8 @@ $(() => {
       })
       .then(function(response) {
         let update_challenge = function() {
+          params["instanced"] = (params["instanced"] === "true");
+          console.log(params)
           CTFd.fetch("/api/v1/challenges/" + window.CHALLENGE_ID, {
             method: "PATCH",
             credentials: "same-origin",

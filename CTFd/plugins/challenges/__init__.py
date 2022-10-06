@@ -32,9 +32,7 @@ class BaseChallenge(object):
         :return:
         """
         data = request.form or request.get_json()
-
         challenge = cls.challenge_model(**data)
-
         db.session.add(challenge)
         db.session.commit()
 
@@ -59,6 +57,7 @@ class BaseChallenge(object):
             "state": challenge.state,
             "max_attempts": challenge.max_attempts,
             "type": challenge.type,
+            "instanced": challenge.instanced,
             "type_data": {
                 "id": cls.id,
                 "name": cls.name,
@@ -79,7 +78,9 @@ class BaseChallenge(object):
         :return:
         """
         data = request.form or request.get_json()
+        print(data)
         for attr, value in data.items():
+            print(attr,value)
             setattr(challenge, attr, value)
 
         db.session.commit()
