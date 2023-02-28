@@ -96,6 +96,19 @@
 		</select>
 	</div>
 	{% endblock %}
+	{% block oddnorse_only %}
+	<div class="form-group">
+		<label>
+			oddnorse_only<br>
+			<small class="form-text text-muted">ONLY TO BE USED FOR ODD NORSEMAN ODD CHALLENGE</small>
+		</label>
+
+		<select class="form-control custom-select" name="instanced">
+			<option value="true" {% if challenge.oddnorse_only == true %}selected{% endif %}>Yes</option>
+			<option value="false" {% if challenge.oddnorse_only == false %}selected{% endif %}>No</option>
+		</select>
+	</div>
+	{% endblock %}
 	{% block submit %}
 	<div>
 		<button class="btn btn-success btn-outlined float-right" type="submit">

@@ -58,6 +58,7 @@ class BaseChallenge(object):
             "max_attempts": challenge.max_attempts,
             "type": challenge.type,
             "instanced": challenge.instanced,
+            "oddnorse_only": challenge.oddnorse_only,
             "type_data": {
                 "id": cls.id,
                 "name": cls.name,

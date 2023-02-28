@@ -1,4 +1,4 @@
-import datetime, requests
+import datetime, requests, base64
 from typing import List
 
 from flask import abort, render_template, request, url_for
@@ -486,7 +486,8 @@ class Challenge(Resource):
             except requests.exceptions.JSONDecodeError:
                 #something went wrong in backend, return empty connection info
                 setattr(chal, "connection_info", "")
-
+        if chal.oddnorse_only:
+            print("CALLED ONLY ")
         response["solves"] = solve_count
         response["solved_by_me"] = solved_by_user
         response["attempts"] = attempts
@@ -494,19 +495,42 @@ class Challenge(Resource):
         response["tags"] = tags
         response["hints"] = hints
 
-        #RENDERED HERE
-        response["view"] = render_template(
-            chal_class.templates["view"].lstrip("/"),
-            solves=solve_count,
-            solved_by_me=solved_by_user,
-            files=files,
-            tags=tags,
-            hints=[Hints(**h) for h in hints],
-            max_attempts=chal.max_attempts,
-            attempts=attempts,
-            challenge=chal,
-            spawn_action=spawn_action
-        )
+        if authed() and chal.oddnorse_only:
+            team = get_current_team()
+            teamtoken = base64.base64_encode(team.secret+team.name)
+            ctfd_secret = "SOMESECRETTOPROVETHISISCTFD"
+            res = requests.get("http://xscapy.n12.dk/api/getQueueid", params={"teamtoken": teamtoken, "secret": ctfd_secret})
+            if res.status_code != 200:
+                chal.connection_info = "N/A, Please contact admin!"
+            else:
+                chal.connection_info = res.body()
+            #RENDERED HERE
+            response["view"] = render_template(
+                chal_class.templates["view"].lstrip("/"),
+                solves=solve_count,
+                solved_by_me=solved_by_user,
+                files=files,
+                tags=tags,
+                hints=[Hints(**h) for h in hints],
+                max_attempts=chal.max_attempts,
+                attempts=attempts,
+                challenge=chal,
+                spawn_action=spawn_action
+            )
+        else:
+            #RENDERED HERE
+            response["view"] = render_template(
+                chal_class.templates["view"].lstrip("/"),
+                solves=solve_count,
+                solved_by_me=solved_by_user,
+                files=files,
+                tags=tags,
+                hints=[Hints(**h) for h in hints],
+                max_attempts=chal.max_attempts,
+                attempts=attempts,
+                challenge=chal,
+                spawn_action=spawn_action
+            )
 
         db.session.close()
         return {"success": True, "data": response}
