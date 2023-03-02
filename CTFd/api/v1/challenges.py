@@ -1,4 +1,4 @@
-import datetime, requests, base64, os
+import datetime, requests, binascii, os
 from typing import List
 
 from flask import abort, render_template, request, url_for
@@ -439,43 +439,29 @@ class Challenge(Resource):
 
         if authed() and chal.oddnorse_only:
             team = get_current_team()
-            max_len = len(team.secret)
-            teamtoken = base64.base64_encode(team.secret[0:max_len/2] + team.name)
-            host = os.environ.get("DYNAMIC_CHALLENGE_API_URL", "http://18.184.189.194")
-            api_key = os.environ.get("DYNAMIC_CHALLENGE_API_KEY", "SOMESECRETTOPROVETHISISCTFD")
+            teamtoken = (str(team.id) + "||" + team.name + "|").encode().hex().ljust(30, "0")[0:30]
+            host = os.environ.get("DYNAMIC_CHALLENGE_API_URL")
+            api_key = os.environ.get("DYNAMIC_CHALLENGE_API_KEY")
             timeout = int(os.environ.get("DYNAMIC_CHALLENGE_API_TIMEOUT", 5))
             res = requests.get(f"{host}/api/getQueueid", params={"teamtoken": teamtoken, "secret": api_key}, timeout=timeout)
             if res.status_code != 200:
                 chal.connection_info = "N/A, Please contact admin!"
             else:
                 chal.connection_info = res.body()
-            #RENDERED HERE
-            response["view"] = render_template(
-                chal_class.templates["view"].lstrip("/"),
-                solves=solve_count,
-                solved_by_me=solved_by_user,
-                files=files,
-                tags=tags,
-                hints=[Hints(**h) for h in hints],
-                max_attempts=chal.max_attempts,
-                attempts=attempts,
-                challenge=chal,
-                spawn_action=spawn_action
-            )
-        else:
-            #RENDERED HERE
-            response["view"] = render_template(
-                chal_class.templates["view"].lstrip("/"),
-                solves=solve_count,
-                solved_by_me=solved_by_user,
-                files=files,
-                tags=tags,
-                hints=[Hints(**h) for h in hints],
-                max_attempts=chal.max_attempts,
-                attempts=attempts,
-                challenge=chal,
-                spawn_action=spawn_action
-            )
+        
+        #RENDERED HERE
+        response["view"] = render_template(
+            chal_class.templates["view"].lstrip("/"),
+            solves=solve_count,
+            solved_by_me=solved_by_user,
+            files=files,
+            tags=tags,
+            hints=[Hints(**h) for h in hints],
+            max_attempts=chal.max_attempts,
+            attempts=attempts,
+            challenge=chal,
+            spawn_action=spawn_action
+        )
 
         db.session.close()
         return {"success": True, "data": response}
