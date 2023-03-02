@@ -79,9 +79,7 @@ class BaseChallenge(object):
         :return:
         """
         data = request.form or request.get_json()
-        print(data)
         for attr, value in data.items():
-            print(attr,value)
             setattr(challenge, attr, value)
 
         db.session.commit()

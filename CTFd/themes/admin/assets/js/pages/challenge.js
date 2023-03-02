@@ -373,7 +373,6 @@ $(() => {
         let update_challenge = function() {
           params["instanced"] = (params["instanced"] === "true");
           params["oddnorse_only"] = (params["oddnorse_only"] === "true");
-          console.log(params)
           CTFd.fetch("/api/v1/challenges/" + window.CHALLENGE_ID, {
             method: "PATCH",
             credentials: "same-origin",

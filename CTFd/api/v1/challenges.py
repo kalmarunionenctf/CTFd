@@ -430,8 +430,6 @@ class Challenge(Resource):
             except requests.exceptions.JSONDecodeError:
                 #something went wrong in backend, return empty connection info
                 setattr(chal, "connection_info", "")
-        if chal.oddnorse_only:
-            print("CALLED ONLY ")
         response["solves"] = solve_count
         response["solved_by_me"] = solved_by_user
         response["attempts"] = attempts
@@ -443,7 +441,7 @@ class Challenge(Resource):
             team = get_current_team()
             teamtoken = base64.base64_encode(team.secret+team.name)
             ctfd_secret = "SOMESECRETTOPROVETHISISCTFD"
-            res = requests.get("http://xscapy.n12.dk/api/getQueueid", params={"teamtoken": teamtoken, "secret": ctfd_secret})
+            res = requests.get("http://18.184.189.194/api/getQueueid", params={"teamtoken": teamtoken, "secret": ctfd_secret})
             if res.status_code != 200:
                 chal.connection_info = "N/A, Please contact admin!"
             else:
