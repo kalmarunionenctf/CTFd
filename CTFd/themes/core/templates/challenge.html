@@ -116,17 +116,6 @@
 								</button>
 							</div>
 							{% endif %}
-							{% if challenge.oddnorse_only and False %}
-							<div class="col-md-9 form-group key-submit">
-								<button id="{{spawn_action}}" class="challenge-submit btn btn-md btn-outline-secondary" type="submit">
-									{% if spawn_action == "start-instance"%}
-									Start instance
-									{% else %}
-									Stop instance
-									{% endif %}
-								</button>
-							</div>
-							{% endif %}
 							<div class="col-md-9 form-group">
 								{% block input %}
 									<input id="challenge-id" class="challenge-id" type="hidden" value="{{ challenge.id }}">
