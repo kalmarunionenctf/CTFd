@@ -443,11 +443,14 @@ class Challenge(Resource):
             host = os.environ.get("DYNAMIC_CHALLENGE_API_URL")
             api_key = os.environ.get("DYNAMIC_CHALLENGE_API_KEY")
             timeout = int(os.environ.get("DYNAMIC_CHALLENGE_API_TIMEOUT", 5))
-            res = requests.get(f"{host}/api/getQueueid", params={"teamtoken": teamtoken, "secret": api_key}, timeout=timeout)
-            if res.status_code != 200:
-                chal.connection_info = "N/A, Please contact admin!"
-            else:
-                chal.connection_info = res.body()
+            try:
+                res = requests.get(f"{host}/api/getQueueid", params={"teamtoken": teamtoken, "secret": api_key}, timeout=timeout)
+                if res.status_code != 200:
+                    chal.connection_info = "N/A, Please contact admin!"
+                else:
+                    chal.connection_info = res.body()
+            except:
+                    chal.connection_info = "Connection failed. Please contact admin!"
         
         #RENDERED HERE
         response["view"] = render_template(
