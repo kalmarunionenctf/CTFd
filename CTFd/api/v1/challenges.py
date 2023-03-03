@@ -1,4 +1,4 @@
-import datetime, requests, base64
+import datetime, requests, binascii, os
 from typing import List
 
 from flask import abort, render_template, request, url_for
@@ -439,40 +439,29 @@ class Challenge(Resource):
 
         if authed() and chal.oddnorse_only:
             team = get_current_team()
-            teamtoken = base64.b64encode(team.secret+team.name)
-            ctfd_secret = "SOMESECRETTOPROVETHISISCTFD"
-            res = requests.get("http://18.184.189.194/api/getQueueid", params={"teamtoken": teamtoken, "secret": ctfd_secret})
+            teamtoken = (str(team.id) + "||" + team.name + "|").encode().hex().ljust(30, "0")[0:30]
+            host = os.environ.get("DYNAMIC_CHALLENGE_API_URL")
+            api_key = os.environ.get("DYNAMIC_CHALLENGE_API_KEY")
+            timeout = int(os.environ.get("DYNAMIC_CHALLENGE_API_TIMEOUT", 5))
+            res = requests.get(f"{host}/api/getQueueid", params={"teamtoken": teamtoken, "secret": api_key}, timeout=timeout)
             if res.status_code != 200:
                 chal.connection_info = "N/A, Please contact admin!"
             else:
                 chal.connection_info = res.body()
-            #RENDERED HERE
-            response["view"] = render_template(
-                chal_class.templates["view"].lstrip("/"),
-                solves=solve_count,
-                solved_by_me=solved_by_user,
-                files=files,
-                tags=tags,
-                hints=[Hints(**h) for h in hints],
-                max_attempts=chal.max_attempts,
-                attempts=attempts,
-                challenge=chal,
-                spawn_action=spawn_action
-            )
-        else:
-            #RENDERED HERE
-            response["view"] = render_template(
-                chal_class.templates["view"].lstrip("/"),
-                solves=solve_count,
-                solved_by_me=solved_by_user,
-                files=files,
-                tags=tags,
-                hints=[Hints(**h) for h in hints],
-                max_attempts=chal.max_attempts,
-                attempts=attempts,
-                challenge=chal,
-                spawn_action=spawn_action
-            )
+        
+        #RENDERED HERE
+        response["view"] = render_template(
+            chal_class.templates["view"].lstrip("/"),
+            solves=solve_count,
+            solved_by_me=solved_by_user,
+            files=files,
+            tags=tags,
+            hints=[Hints(**h) for h in hints],
+            max_attempts=chal.max_attempts,
+            attempts=attempts,
+            challenge=chal,
+            spawn_action=spawn_action
+        )
 
         db.session.close()
         return {"success": True, "data": response}
@@ -847,21 +836,3 @@ class ChallengeRequirements(Resource):
     def get(self, challenge_id):
         challenge = Challenges.query.filter_by(id=challenge_id).first_or_404()
         return {"success": True, "data": challenge.requirements}
-
-@challenges_namespace.route("/<challenge_id>/instance")
-class ChallengeUrl(Resource):
-    def post(self, challenge_id):
-        try:
-            res = requests.post("http://127.0.0.1:8000/start-instance/"+challenge_id).json()
-            instance = res.get("instance", "")
-        except requests.exceptions.JSONDecodeError:
-            pass
-        return {"success": True, "data": challenge_id}
-    
-    def delete(self, challenge_id):
-        try:
-            return requests.post("http://127.0.0.1:8000/stop-instance"+challenge_id).json()
-        except requests.exceptions.JSONDecodeError:
-            pass
-        return {"success": False, "data": "something went wrong"}
-            

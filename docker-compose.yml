@@ -16,6 +16,9 @@ services:
       - ACCESS_LOG=-
       - ERROR_LOG=-
       - REVERSE_PROXY=true
+      - DYNAMIC_CHALLENGE_API_URL=http://18.184.189.194
+      - DYNAMIC_CHALLENGE_API_KEY=
+      - DYNAMIC_CHALLENGE_API_TIMEOUT=5
     volumes:
       - .data/CTFd/logs:/var/log/CTFd
       - .data/CTFd/uploads:/var/uploads
