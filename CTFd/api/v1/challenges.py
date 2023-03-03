@@ -439,7 +439,7 @@ class Challenge(Resource):
 
         if authed() and chal.oddnorse_only:
             team = get_current_team()
-            teamtoken = base64.base64_encode(team.secret+team.name)
+            teamtoken = base64.b64encode(team.secret+team.name)
             ctfd_secret = "SOMESECRETTOPROVETHISISCTFD"
             res = requests.get("http://18.184.189.194/api/getQueueid", params={"teamtoken": teamtoken, "secret": ctfd_secret})
             if res.status_code != 200:
