@@ -448,7 +448,7 @@ class Challenge(Resource):
                 if res.status_code != 200:
                     chal.connection_info = "N/A, Please contact admin!"
                 else:
-                    chal.connection_info = res.body()
+                    chal.connection_info = res.text
             except:
                     chal.connection_info = "Connection failed. Please contact admin!"
         
